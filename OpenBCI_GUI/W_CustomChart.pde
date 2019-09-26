@@ -16,11 +16,11 @@ import java.awt.Robot;
 import java.awt.event.KeyEvent;
 
 // color enums
-public enum FocusColors {
+public enum BFocusColors {
     GREEN, CYAN, ORANGE
 }
 
-class W_Focus extends Widget {
+class W_CustomChart extends Widget {
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     Robot robot;    // a key-stroking robot waiting for focused state
     boolean enableKey = false;  // enable key stroke by the robot
@@ -33,13 +33,21 @@ class W_Focus extends Widget {
 
     // alpha, beta threshold default values
     float alpha_thresh = 0.7, beta_thresh = 0.7, alpha_upper = 2, beta_upper = 2;
+    
+    //custom button & flags %^$^%^$
+    boolean isRecording = false;
+    float recCount = 0.0;
+    float interval = 10.0;
+    float newAl = 0.0;
+    Button startStopTest;
+    int padding = 24;
 
     // drawing parameters
     boolean showAbout = false;
     PFont myfont = createFont("fonts/Raleway-SemiBold.otf", 12);
     PFont f = f1; //for widget title
 
-    FocusColors focusColors = FocusColors.GREEN;
+    BFocusColors focusColors = BFocusColors.GREEN;
 
     color cBack, cDark, cMark, cFocus, cWave, cPanel;
 
@@ -54,28 +62,31 @@ class W_Focus extends Widget {
     float xb, yb; // button center xy
 
     // two sliders for alpha and one slider for beta
-    FocusSliderx sliderAlphaMid, sliderBetaMid;
-    FocusSlider_Staticx sliderAlphaTop;
+    FocusSlider sliderAlphaMid, sliderBetaMid;
+    FocusSlider_Static sliderAlphaTop;
 
-    W_Focus(PApplet _parent){
+    W_CustomChart(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         // initialize graphics parameters
         onColorChange();
         update_graphic_parameters();
+        // Button CUSTOM
+        startStopTest = new Button (0, 0, 200, navHeight, "Start Focus Test", 12);
+        startStopTest.setFont(p4, 14);
 
         // sliders
-        sliderAlphaMid = new FocusSliderx(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2, alpha_thresh / alpha_upper);
-        sliderAlphaTop = new FocusSlider_Staticx(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2);
-        sliderBetaMid = new FocusSliderx(x + xg2 + wg * 0.8, y + yg2 + hg/2, y + yg2 - hg/2, beta_thresh / beta_upper);
+        sliderAlphaMid = new FocusSlider(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2, alpha_thresh / alpha_upper);
+        sliderAlphaTop = new FocusSlider_Static(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2);
+        sliderBetaMid = new FocusSlider(x + xg2 + wg * 0.8, y + yg2 + hg/2, y + yg2 - hg/2, beta_thresh / beta_upper);
 
         ///Focus widget settings
         settings.focusThemeSave = 0;
         settings.focusKeySave = 0;
 
         //Dropdowns.
-        addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), settings.focusThemeSave);
-        addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), settings.focusKeySave);
+        addDropdown("ChooseFocusColorx", "Theme", Arrays.asList("Green", "Orange", "Cyan"), settings.focusThemeSave);
+        addDropdown("StrokeKeyWhenFocusedx", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), settings.focusKeySave);
 
         // prepare simulate keystroking
         try {
@@ -167,6 +178,33 @@ class W_Focus extends Widget {
         } else {
             isFocused = false;
         }
+              if(isRecording) 
+       { 
+       recCount+= 1.0;
+       newAl+=alpha_avg;
+       // PRINTING COUNTER & ALPHA
+      //  print(recCount+" - "+alpha_avg+"\n");
+
+        if(recCount == interval)
+        {
+          //PRINTING AVG ALPHAS WITH FIXED INTERVAL
+          //print("TOT:"+newAl+" AVG: "+newAl/recCount+"\n");
+          
+          // PRINTING THE INTERVAL AVERGE
+                    print(newAl/recCount+"\n");
+
+          recCount = 0.0;
+          newAl=0.0;
+        
+        }
+       
+        
+        // TO PRINT ALL ALPHA 
+       //  print(alpha_avg+"\n");
+
+      }
+
+
     }
 
     void invokeKeyStroke() {
@@ -193,9 +231,13 @@ class W_Focus extends Widget {
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        
+
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
+        
+
 
         //----------------- presettings before drawing Focus Viz --------------
         translate(x, y);
@@ -341,6 +383,8 @@ class W_Focus extends Widget {
         //----------------- revert origin point of draw to default -----------------
         translate(-x, -y);
         textAlign(LEFT, BASELINE);
+                                startStopTest.draw();
+
 
         popStyle();
 
@@ -348,6 +392,8 @@ class W_Focus extends Widget {
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+                startStopTest.setPos(x + padding, y + padding);
+
 
         update_graphic_parameters();
 
@@ -389,6 +435,10 @@ class W_Focus extends Widget {
         sliderAlphaMid.mousePressed();
         sliderAlphaTop.mousePressed();
         sliderBetaMid.mousePressed();
+        
+        if(startStopTest.isMouseHere()){
+            startStopTest.setIsActive(true);
+        }
     }
 
     void mouseReleased(){
@@ -398,6 +448,25 @@ class W_Focus extends Widget {
         sliderAlphaMid.mouseReleased();
         sliderAlphaTop.mouseReleased();
         sliderBetaMid.mouseReleased();
+        
+        if(startStopTest.isActive && startStopTest.isMouseHere()){
+                if(!isRecording){
+                    //Stop impedance check
+                    isRecording = true;
+                                        println("Starting test check. Printing AVG VALS.. with interval : "+interval);
+
+                    startStopTest.but_txt = "Stop Focus Test";
+                } else {
+                    // if is running... stopRunning and switch the state of the Start/Stop button back to Data Stream stopped
+                   isRecording = false;
+                   recCount=0;
+                   
+                    println("Stopping test check...");
+                    startStopTest.but_txt = "Start Focus Test";
+                }
+            
+        }
+        startStopTest.setIsActive(false);
     }
 
 };
@@ -405,14 +474,14 @@ class W_Focus extends Widget {
 /* ---------------------- Supporting Slider Classes ---------------------------*/
 
 // abstract basic slider
-public abstract class BasicSliderx {
+public abstract class BasicSlider {
     float x, y, w, h;  // center x, y. w, h means width and height of triangle
     float yBot, yTop;   // y range. Notice val of top y is less than bottom y
     boolean isPressed = false;
     color cNormal = #CCCCCC;
     color cPressed = #FF0000;
 
-    BasicSliderx(float _x, float _yBot, float _yTop) {
+    BasicSlider(float _x, float _yBot, float _yTop) {
         x = _x;
         yBot = _yBot;
         yTop = _yTop;
@@ -450,11 +519,11 @@ public abstract class BasicSliderx {
 }
 
 // middle slider that changes value and move
-public class FocusSliderx extends BasicSliderx {
+public class FocusSlider extends BasicSlider {
     private float val = 0;  // val = 0 ~ 1 -> yBot to yTop
     final float valMin = 0;
     final float valMax = 0.90;
-    FocusSliderx(float _x, float _yBot, float _yTop, float _val) {
+    FocusSlider(float _x, float _yBot, float _yTop, float _val) {
         super(_x, _yBot, _yTop);
         val = constrain(_val, valMin, valMax);
         y = map(val, 0, 1, yBot, yTop);
@@ -487,11 +556,11 @@ public class FocusSliderx extends BasicSliderx {
 }
 
 // top slider that changes value but doesn't move
-public class FocusSlider_Staticx extends BasicSliderx {
+public class FocusSlider_Static extends BasicSlider {
     private float val = 0;  // val = 0 ~ 1 -> yBot to yTop
     final float valMin = 0.5;
     final float valMax = 5.0;
-    FocusSlider_Staticx(float _x, float _yBot, float _yTop) {
+    FocusSlider_Static(float _x, float _yBot, float _yTop) {
         super(_x, _yBot, _yTop);
         val = 1;
         y = yTop;
@@ -525,7 +594,7 @@ public class FocusSlider_Staticx extends BasicSliderx {
 /* ---------------- Global Functions For Menu Entries --------------------*/
 
 // //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-void StrokeKeyWhenFocused(int n){
+void StrokeKeyWhenFocusedx(int n){
     // println("Item " + (n+1) + " selected from Dropdown 1");
     if(n==0){
         //do this
@@ -546,7 +615,7 @@ void StrokeKeyWhenFocused(int n){
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
-void ChooseFocusColor(int n){
+void ChooseFocusColorx(int n){
     if(n==0){
         w_focus.focusColors = FocusColors.GREEN;
         w_focus.onColorChange();

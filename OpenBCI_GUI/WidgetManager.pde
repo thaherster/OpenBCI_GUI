@@ -29,6 +29,7 @@ W_DigitalRead w_digitalRead;
 W_MarkerMode w_markermode;
 W_playback w_playback;
 W_SSVEP w_ssvep;
+W_CustomChart w_customchart;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -122,7 +123,9 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_markermode.setTitle("Marker Mode");
         addWidget(w_markermode, w);
     }
-
+    w_customchart = new W_CustomChart(_this);
+    w_customchart.setTitle("Boosted Focus");
+    addWidget(w_customchart, w);
     
     //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
     //DEVELOPERS: Here is an example widget with the essentials/structure in place

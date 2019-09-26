@@ -691,4 +691,3 @@ void Frequency_3(int n) {
 void Frequency_4(int n) {
     w_ssvep.closeAllDropdowns();
 }
-
